@@ -43,7 +43,7 @@ def shot(url: str, name: str) -> None:
         "--headless=new",
         "--disable-gpu",
         "--hide-scrollbars",
-        "--window-size=1440,1100",
+        "--window-size=1440,1400",
         f"--screenshot={out}",
         url,
     ]

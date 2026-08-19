@@ -129,7 +129,6 @@ async function openPdf(uri, title) {
       chunkMeta.textContent = `${loaded.toLocaleString()} / ${total.toLocaleString()} bytes`;
       status.textContent = `Streaming ${title || uri}… ${Math.round((100 * loaded) / total)}%`;
     });
-    const url = URL.createObjectURL(blob);
     const mime = blob.type || "";
     if (mime.startsWith("text/html")) {
       const html = await blob.text();
@@ -141,7 +140,26 @@ async function openPdf(uri, title) {
       frame.srcdoc = `<pre style="white-space:pre-wrap;font:14px/1.45 Georgia,serif;padding:1rem;margin:0;background:#fff;color:#1c1917">${
         text.replace(/&/g,"&amp;").replace(/</g,"&lt;").slice(0, 50000)
       }</pre>`;
+    } else if (mime.includes("pdf") || mime === "application/octet-stream") {
+      // Headless / iframe PDF plugins are unreliable — show rasterized pages.
+      const preview = await fetch(`/preview/pdf?uri=${encodeURIComponent(uri)}&pages=2`).then((r) => {
+        if (!r.ok) throw new Error(`preview failed: ${r.status}`);
+        return r.json();
+      });
+      const pages = (preview.pages || [])
+        .map(
+          (p) =>
+            `<figure style="margin:0 0 1rem"><figcaption style="font:700 0.72rem system-ui;color:#78716c;margin:0 0 .35rem">Page ${p.page}</figcaption>` +
+            `<img alt="page ${p.page}" style="width:100%;border:1px solid #e7e5e4" src="data:image/png;base64,${p.bytes}" /></figure>`
+        )
+        .join("");
+      frame.removeAttribute("src");
+      frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;padding:1rem;background:#fff;font-family:Georgia,serif">
+        <div style="font-weight:700;margin-bottom:.75rem">${(title || uri).replace(/</g,"&lt;")}</div>
+        ${pages}
+      </body></html>`;
     } else {
+      const url = URL.createObjectURL(blob);
       frame.removeAttribute("srcdoc");
       frame.src = url;
     }

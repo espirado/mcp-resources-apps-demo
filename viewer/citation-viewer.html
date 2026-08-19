@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Citation viewer (MCP Apps spike)</title>
+  <style>
+    :root { color-scheme: light; font-family: ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; background: #f8fafc; color: #0f172a; }
+    header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; background: #fff; }
+    h1 { font-size: 1rem; margin: 0; }
+    p { margin: 0.35rem 0 0; font-size: 0.875rem; color: #64748b; }
+    main { padding: 1rem 1.25rem; display: grid; gap: 0.75rem; }
+    label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; }
+    input, button { font: inherit; }
+    input { width: min(100%, 40rem); padding: 0.5rem 0.65rem; border: 1px solid #cbd5e1; border-radius: 0.375rem; }
+    button { padding: 0.5rem 0.85rem; border: 0; border-radius: 0.375rem; background: #0f766e; color: #fff; font-weight: 600; cursor: pointer; }
+    #status { font-size: 0.875rem; color: #475569; min-height: 1.25rem; }
+    #frame { width: 100%; min-height: 70vh; border: 1px solid #e2e8f0; border-radius: 0.5rem; background: #fff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Citation viewer</h1>
+    <p>MCP Apps spike — load <code>demo://</code> docs via app-only <code>read_document_bytes</code> or <code>resources/read</code>.</p>
+  </header>
+  <main>
+    <div>
+      <label for="uri">Resource URI</label><br />
+      <input id="uri" value="demo://citations/sample-notice" />
+    </div>
+    <div>
+      <button id="load" type="button">Load document</button>
+    </div>
+    <div id="status"></div>
+    <iframe id="frame" title="Citation document"></iframe>
+  </main>
+  <script>
+    async function defaultBridge(uri) {
+      throw new Error(
+        "Host bridge missing: set window.__mcpReadDocumentBytes(uri) -> Uint8Array|Blob"
+      );
+    }
+    const statusEl = document.getElementById("status");
+    const frame = document.getElementById("frame");
+    document.getElementById("load").addEventListener("click", async () => {
+      const uri = document.getElementById("uri").value.trim();
+      if (!uri) { statusEl.textContent = "Enter a demo:// URI"; return; }
+      statusEl.textContent = "Loading…";
+      try {
+        const bridge = window.__mcpReadDocumentBytes || defaultBridge;
+        const data = await bridge(uri);
+        const blob = data instanceof Blob
+          ? data
+          : new Blob([data], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        frame.src = url;
+        statusEl.textContent = `Loaded ${blob.size.toLocaleString()} bytes`;
+      } catch (err) {
+        statusEl.textContent = String(err && err.message ? err.message : err);
+      }
+    });
+  </script>
+</body>
+</html>

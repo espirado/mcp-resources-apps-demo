@@ -1,0 +1,70 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "tools": [
+      {
+        "name": "review_claim_requirements",
+        "description": "Given a claim scenario (payer + CPT/HCPCS), return structured billing requirements: timely filing, prior auth hints, required attachments, and citation resource URIs for the underlying payer policy PDFs. Does NOT return PDF bytes \u2014 use resources or read_document_bytes so the MCP App can render documents for the human claims reviewer.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "payer": {
+              "type": "string",
+              "description": "Payer key, e.g. acme-health"
+            },
+            "cpt": {
+              "type": "string",
+              "description": "Procedure code, e.g. 27447"
+            }
+          },
+          "required": [
+            "payer",
+            "cpt"
+          ]
+        }
+      },
+      {
+        "name": "list_policy_library",
+        "description": "List demo payer policy documents available as MCP resources.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "read_document_bytes",
+        "description": "App-only: stream a policy PDF (or Apps shell) in base64 chunks. Keeps large claim paperwork out of model context.",
+        "annotations": {
+          "readOnlyHint": true
+        },
+        "_meta": {
+          "ui": {
+            "visibility": [
+              "app"
+            ]
+          }
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "integer",
+              "default": 0
+            },
+            "length": {
+              "type": "integer",
+              "default": 65536
+            }
+          },
+          "required": [
+            "uri"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 105,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"bytes\": \"MDAwMDU2IDAwMDAwIG4gCjAwMDAwMDAxMTEgMDAwMDAgbiAKMDAwMDAwMDIzMyAwMDAwMCBuIAowMDAwMDAxMTU5IDAwMDAwIG4gCnRyYWlsZXI8PCAvU2l6ZSA2IC9Sb290IDEgMCBSID4+CnN0YXJ0eHJlZgoxMjI3CiUlRU9GCg==\",\n  \"offset\": 1280,\n  \"length\": 130,\n  \"totalSize\": 1410,\n  \"hasMore\": false,\n  \"nextOffset\": null,\n  \"mimeType\": \"application/pdf\",\n  \"uri\": \"demo://policies/acme-ortho-2026\"\n}"
+      }
+    ]
+  }
+}

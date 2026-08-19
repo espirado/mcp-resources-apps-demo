@@ -1,0 +1,64 @@
+{
+  "documents": [
+    {
+      "id": "acme-ortho-2026",
+      "payer": "Acme Health",
+      "title": "Acme Health — Orthopedic Surgery Medical Policy (2026)",
+      "description": "Coverage criteria, documentation checklist, and timely filing for major joint procedures.",
+      "uri": "demo://policies/acme-ortho-2026",
+      "file": "acme-ortho-policy.pdf",
+      "pages_hint": "pp. 4–7 documentation checklist"
+    },
+    {
+      "id": "acme-pa-grid",
+      "payer": "Acme Health",
+      "title": "Acme Health — Prior Authorization Code Grid",
+      "description": "Which CPT/HCPCS codes require PA before elective outpatient surgery.",
+      "uri": "demo://policies/acme-pa-grid",
+      "file": "acme-pa-grid.pdf",
+      "pages_hint": "Table B — musculoskeletal"
+    },
+    {
+      "id": "northstar-imaging",
+      "payer": "Northstar Mutual",
+      "title": "Northstar Mutual — Advanced Imaging Utilization Policy",
+      "description": "MRI/CT medical necessity and attachment requirements.",
+      "uri": "demo://policies/northstar-imaging",
+      "file": "northstar-imaging.pdf",
+      "pages_hint": "§3 clinical notes"
+    }
+  ],
+  "claim_rules": [
+    {
+      "payer": "acme-health",
+      "payer_display": "Acme Health",
+      "cpts": ["27447", "27130"],
+      "procedure": "Total knee / hip arthroplasty",
+      "status": "conditional",
+      "timely_filing_days": 90,
+      "prior_auth": "required_for_elective",
+      "required_attachments": [
+        "operative_report",
+        "conservative_care_notes",
+        "radiology_report"
+      ],
+      "reviewer_notes": "Elective joint replacement usually needs PA plus documented failed conservative therapy. Open the ortho medical policy PDF before coding the claim.",
+      "document_ids": ["acme-ortho-2026", "acme-pa-grid"]
+    },
+    {
+      "payer": "northstar-mutual",
+      "payer_display": "Northstar Mutual",
+      "cpts": ["70553", "72148"],
+      "procedure": "MRI brain / lumbar spine with contrast protocols",
+      "status": "conditional",
+      "timely_filing_days": 120,
+      "prior_auth": "required",
+      "required_attachments": [
+        "ordering_physician_notes",
+        "prior_imaging_comparison"
+      ],
+      "reviewer_notes": "Advanced imaging is PA-gated. Confirm medical necessity language in the imaging policy PDF matches the order.",
+      "document_ids": ["northstar-imaging"]
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+:root {
+  --bg: #f3efe6;
+  --ink: #1c1917;
+  --muted: #57534e;
+  --panel: #fffdf8;
+  --line: #d6d3d1;
+  --accent: #0f766e;
+  --accent-soft: #ccfbf1;
+  --warn: #b45309;
+  --warn-soft: #ffedd5;
+  --ok: #166534;
+  --ok-soft: #dcfce7;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-body: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-body);
+  background:
+    radial-gradient(ellipse at top left, #faf6ee 0%, transparent 50%),
+    linear-gradient(160deg, #ebe4d7 0%, var(--bg) 45%, #e7eef0 100%);
+}
+
+.shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+h1 {
+  margin: 0.25rem 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 600;
+}
+
+.lede {
+  margin: 0;
+  max-width: 40rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.flow-pill {
+  flex: none;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1rem 1.1rem 1.15rem;
+  box-shadow: 0 10px 30px rgba(28, 25, 23, 0.04);
+}
+
+.query { margin-bottom: 1rem; }
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+h3 {
+  margin: 0.9rem 0 0.35rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+#claimForm {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+select, button {
+  font: inherit;
+}
+
+select {
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+button {
+  padding: 0.6rem 0.95rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: var(--accent);
+  color: #ecfdf5;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.55; cursor: wait; }
+
+.hint, .note {
+  margin: 0.7rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 1rem;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+}
+
+.hidden { display: none !important; }
+
+.status-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+
+.meta {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; font-weight: 600; }
+
+ul { margin: 0.2rem 0 0; padding-left: 1.1rem; }
+li { margin: 0.2rem 0; font-size: 0.9rem; }
+
+.citations button.linkish {
+  background: transparent;
+  color: var(--accent);
+  border: 0;
+  padding: 0;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.doc-panel { display: flex; flex-direction: column; min-height: 28rem; }
+
+.doc-status {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+#pdfFrame {
+  flex: 1;
+  width: 100%;
+  min-height: 22rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: #fff;
+}
+
+footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+@media (max-width: 860px) {
+  #claimForm, .grid { grid-template-columns: 1fr; }
+  .top { flex-direction: column; }
+}

@@ -1,0 +1,20 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {
+      "tools": {
+        "listChanged": false
+      },
+      "resources": {
+        "listChanged": false,
+        "subscribe": false
+      }
+    },
+    "serverInfo": {
+      "name": "mcp-claims-desk",
+      "version": "0.2.0"
+    }
+  }
+}

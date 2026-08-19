@@ -1,0 +1,108 @@
+{
+  "scenarios": [
+    {
+      "id": "medicare-tka",
+      "payer": "medicare",
+      "payer_display": "Medicare Fee-For-Service",
+      "cpt": "27447",
+      "procedure": "Total knee arthroplasty",
+      "service_category": "orthopedic_surgery",
+      "rci_payer_slug": "medicare_ffs",
+      "sources": [
+        {
+          "id": "lcd-l33618",
+          "title": "LCD L33618 — Major Joint Replacement (Hip and Knee)",
+          "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?lcdId=33618&ver=23",
+          "kind": "html",
+          "uri": "doc://cms/lcd-l33618"
+        },
+        {
+          "id": "claims-manual-ch12",
+          "title": "Medicare Claims Processing Manual — Chapter 12 (PDF)",
+          "url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Downloads/clm104c12.pdf",
+          "kind": "pdf",
+          "uri": "doc://cms/claims-manual-ch12"
+        }
+      ]
+    },
+    {
+      "id": "medicare-tha",
+      "payer": "medicare",
+      "payer_display": "Medicare Fee-For-Service",
+      "cpt": "27130",
+      "procedure": "Total hip arthroplasty",
+      "service_category": "orthopedic_surgery",
+      "rci_payer_slug": "medicare_ffs",
+      "sources": [
+        {
+          "id": "lcd-l33618",
+          "title": "LCD L33618 — Major Joint Replacement (Hip and Knee)",
+          "url": "https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?lcdId=33618&ver=23",
+          "kind": "html",
+          "uri": "doc://cms/lcd-l33618"
+        },
+        {
+          "id": "claims-manual-ch12",
+          "title": "Medicare Claims Processing Manual — Chapter 12 (PDF)",
+          "url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Downloads/clm104c12.pdf",
+          "kind": "pdf",
+          "uri": "doc://cms/claims-manual-ch12"
+        }
+      ]
+    },
+    {
+      "id": "medicare-mri-brain",
+      "payer": "medicare",
+      "payer_display": "Medicare Fee-For-Service",
+      "cpt": "70553",
+      "procedure": "MRI brain (with/without contrast)",
+      "service_category": "advanced_imaging",
+      "rci_payer_slug": "medicare_ffs",
+      "sources": [
+        {
+          "id": "claims-manual-ch12",
+          "title": "Medicare Claims Processing Manual — Chapter 12 (PDF)",
+          "url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Downloads/clm104c12.pdf",
+          "kind": "pdf",
+          "uri": "doc://cms/claims-manual-ch12"
+        }
+      ]
+    },
+    {
+      "id": "medicare-dme-cpap",
+      "payer": "medicare",
+      "payer_display": "Medicare Fee-For-Service",
+      "cpt": "E0601",
+      "procedure": "CPAP device (DME)",
+      "service_category": "dme",
+      "rci_payer_slug": "medicare_ffs",
+      "sources": [
+        {
+          "id": "claims-manual-ch12",
+          "title": "Medicare Claims Processing Manual — Chapter 12 (PDF)",
+          "url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Downloads/clm104c12.pdf",
+          "kind": "pdf",
+          "uri": "doc://cms/claims-manual-ch12"
+        }
+      ]
+    },
+    {
+      "id": "uhc-mri-brain",
+      "payer": "uhc",
+      "payer_display": "UnitedHealthcare",
+      "cpt": "70553",
+      "procedure": "MRI brain (with/without contrast)",
+      "service_category": "advanced_imaging",
+      "rci_payer_slug": "uhc",
+      "sources": [
+        {
+          "id": "claims-manual-ch12",
+          "title": "Medicare Claims Processing Manual — Chapter 12 (PDF) — reference",
+          "url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Downloads/clm104c12.pdf",
+          "kind": "pdf",
+          "uri": "doc://cms/claims-manual-ch12"
+        }
+      ]
+    }
+  ]
+}

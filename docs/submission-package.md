@@ -1,44 +1,44 @@
 # AAIF submission package (personal · @espirado)
 
 ## Suggested title
-Claims paperwork is the hard part. MCP Apps can put the policy PDF next to the answer.
+Open the LCD. Then code the claim. — live CMS sources in an MCP App
 
 ## Author
 - Name: Andrew Espira
 - GitHub: [@espirado](https://github.com/espirado)
 - Site: https://espiradev.org
 - LinkedIn: https://www.linkedin.com/in/andrew-espira
-- Bio: Platform/SRE engineer. AAIF Ambassador. Exploring MCP Apps for real document-heavy workflows — starting with medical claims / payer policy review.
+- Bio: Platform/SRE engineer. AAIF Ambassador. Building MCP Apps for document-heavy RCM workflows with live CMS fetches.
 - Headshot: attach in Asana form
 
 ## Story
-Scattered payer policies and claim paperwork are the painful part of billing. This personal demo shows MCP tools returning structured claim requirements + citation URIs, while an MCP App fetches and displays the source policy PDF for the human reviewer — without stuffing PDFs into model context.
+A claims desk MCP App that resolves Medicare CPT scenarios against live CMS LCDs and claims manuals. Tools return structured requirements + `doc://` URIs; the App streams the fetched source for the reviewer. Optional RCI API enrichment when keyed.
 
 ## Artifacts
 - Blog: `docs/blog-draft.md` (with screenshots)
 - App: `python3 scripts/serve_app.py` → http://127.0.0.1:8765
-- Evidence: `evidence/SUMMARY.json`
+- Evidence: `evidence/SUMMARY.json` (`cms_live_fetch: true`)
 - Screenshots: `docs/screenshots/*.png`
+- Repo: https://github.com/espirado/mcp-resources-apps-demo
 
 ## AAIF project
 - MCP · Track B (MCP Apps)
 
 ## Social copy
-Medical billing’s hard part isn’t the code — it’s the PDFs.
-
-Personal MCP Apps demo: claim requirements as JSON + payer policy PDFs rendered beside them for the human reviewer. Model never eats the paperwork.
+Live CMS LCD + claims-manual fetch in an MCP App: structured claim requirements as JSON, source document streamed beside them for the reviewer. Model never eats the paperwork.
 
 ## Hashtags
 `#MCP` `#MCPApps` `#AAIF` `#HealthTech` `#AgenticAI`
 
 ## Checklist
 - [x] Runnable personal demo (not a company repo)
+- [x] Live CMS fetch (no mock payer PDFs)
 - [x] Screenshots of the full flow
-- [x] Blog draft with claims/payer-policy narrative
-- [x] Evidence that tools return URIs (not PDF bytes)
+- [x] Blog draft — technical implementation story
+- [x] Evidence that tools return URIs (not document bytes)
 - [ ] Headshot for Asana
-- [ ] Publish aaif.io / open ambassadors issue when ready
+- [ ] Publish / open ambassadors issue when ready
 
-## Submit
+## Submit (only after review)
 1. https://form.asana.com/?k=Bq-lRvAXGzHQIXH_etPOxA&d=9283783873717
 2. Issue on https://github.com/aaif/ambassadors with public repo URL under @espirado

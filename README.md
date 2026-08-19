@@ -1,41 +1,38 @@
-# Claims desk — MCP Apps demo (personal)
+# Claims desk — MCP Apps (personal)
 
-Personal MCP + MCP Apps demo by [Andrew Espira](https://github.com/espirado) for an [AAIF Ambassador](https://github.com/aaif/ambassadors) contribution.
+Personal MCP + MCP Apps demo by [Andrew Espira](https://github.com/espirado).
 
-**Problem:** medical billing is drowning in scattered payer policy PDFs.  
-**Pattern:** MCP tools return claim requirements + citation URIs; an MCP App streams and shows the source PDF for the human reviewer — without putting document bytes in the model context.
+**What it does:** resolve Medicare claim documentation for a CPT against **live CMS sources** (LCD pages + Claims Processing Manual PDF). The MCP tool returns structured requirements + `doc://` URIs; the App streams the fetched document for the reviewer. Optional live enrichment via `RCI_API_KEY` → prior-auth / claim-intelligence APIs.
 
 ## Quick start
 
 ```bash
-# Protocol evidence (no browser)
-python3 scripts/run_evidence.py
-
-# Interactive claims desk UI
-python3 scripts/serve_app.py
-# → http://127.0.0.1:8765
-
-# Screenshots for the blog
+python3 scripts/run_evidence.py   # live CMS fetch + chunk integrity
+python3 scripts/serve_app.py      # → http://127.0.0.1:8765
 python3 scripts/capture_screenshots.py
 ```
 
-## Blog draft
+Optional:
 
-See [`docs/blog-draft.md`](docs/blog-draft.md) (includes screenshots).
+```bash
+export RCI_API_KEY=...
+export RCI_API_URL=https://api-dev.rcintell.com
+```
 
 ## Layout
 
 | Path | Purpose |
 |------|---------|
 | `src/mcp_pdf_demo/server.py` | MCP JSON-RPC (tools + resources + chunked reads) |
-| `app/` | Claims desk MCP App UI |
-| `fixtures/` | Synthetic payer policy PDFs |
-| `docs/screenshots/` | Blog screenshots |
-| `scripts/serve_app.py` | Local Apps host bridge (`POST /mcp`) |
+| `src/mcp_pdf_demo/live.py` | CMS fetch/cache + optional RCI HTTP |
+| `fixtures/catalog.json` | CPT → live CMS URL map |
+| `app/` | Claims desk UI |
+| `docs/blog-draft.md` | Technical story + screenshots |
+| `scripts/serve_app.py` | Local Apps host (`POST /mcp`) |
 
-## Honesty
+## Blog
 
-Synthetic payers/PDFs for education only. Protocol `2024-11-05`. Apps host is a local spike.
+[`docs/blog-draft.md`](docs/blog-draft.md)
 
 ## License
 

@@ -1,11 +1,11 @@
 {
   "jsonrpc": "2.0",
-  "id": 105,
+  "id": 428,
   "result": {
     "content": [
       {
         "type": "text",
-        "text": "{\n  \"bytes\": \"MDAwMDU2IDAwMDAwIG4gCjAwMDAwMDAxMTEgMDAwMDAgbiAKMDAwMDAwMDIzMyAwMDAwMCBuIAowMDAwMDAxMTU5IDAwMDAwIG4gCnRyYWlsZXI8PCAvU2l6ZSA2IC9Sb290IDEgMCBSID4+CnN0YXJ0eHJlZgoxMjI3CiUlRU9GCg==\",\n  \"offset\": 1280,\n  \"length\": 130,\n  \"totalSize\": 1410,\n  \"hasMore\": false,\n  \"nextOffset\": null,\n  \"mimeType\": \"application/pdf\",\n  \"uri\": \"demo://policies/acme-ortho-2026\"\n}"
+        "text": "{\n  \"bytes\": \"cKZlBn6smlmW6at7RWC9hwO/7/rUgDmK3VODMose1rPZeBSHs61m8DGWUU140L6KH3Lt3Nd1PAP0ZgPlJ1+UMvemfh0kT9J9OxyhUyPI3DtENfLtzs/SX0dqz7nqYuU/Uc1AxS+nPFPtx8NSJkvS+mE66/Pv6r3oe4leEp9S/jXF2q8i3c/zupNHusdGr4g3Kq+7R6T9Idos6pSJ9F6iHi7WV5DXDhxl/erriNZby/knFD8iagXyWaz3EunryD9vcaR9Pi9Gz4o6NfJ6d5E8iXXvinUrK+q2kKgyOVSnieJYt9nkClE1sYyKNf54LzHdGcLCkarRXTSR/8l5ovaQgs7Z5FrFyhf0v0Oik6KgW0ThbWW0tkXd1Qva2xN9m5FGHmczul2xTuRYe1ehpyq1wrF8KGiESWz5RHfXROdX0sdmlGgnT7K+tPOUtPMnugslWoFYX32crZ6+xLJO3iidXZjX+hSz96j/TYrZ+9XXVNKso8v16/k6bXVfbdX613Ufq8mZVuXjO2TpLzt/uHn6NXI7/4fcXdT/dEHF5XUCBrI90DsNdF8N+nRtIYxdC62upudv+ir8zhiO+xPj/DvMTqX0f6NdyfCbf6KX/yLD5awD3AVezWEdIF5BvIJ4BSFeQbyCeAUhXkG8gngFIV5BvIJ4BSFeQbyCeAUhXsF/CUO8guxXEK8gXrEOEK8gXkG8ghCvIF5BvIIQryBeQbyCEK8gXkG8ghCvIF5BvIIQryBeQbyCEK8gXkG8ghCvIF5BvIIQryBeQbyCEK8gXkG8ghCvIF5BvIIQryBeQbyCEK8gXkG8ghCvIF5BvIJ4xTpAvIJ4BfEKQryCeAXxCkK8gngF8QpCvIJ4BfEKQryCeAXxCkK8gngF8QpCvIJ4BfEKQryCeAXxCkK8gngF8QpCvIJ4BfEKQryCeAXxCkK8gngF8QpCvIJ4BfEKQryCePX/Zu511uEvObzkZwEGAHsPXQMNCmVuZHN0cmVhbQ1lbmRvYmoNc3RhcnR4cmVmDQoxMTYNCiUlRU9GDQo=\",\n  \"offset\": 1343488,\n  \"length\": 779,\n  \"totalSize\": 1344267,\n  \"hasMore\": false,\n  \"nextOffset\": null,\n  \"mimeType\": \"application/pdf\",\n  \"uri\": \"doc://cms/claims-manual-ch12\"\n}"
       }
     ]
   }

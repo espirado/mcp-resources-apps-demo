@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise claims-desk MCP + write evidence/SUMMARY.json."""
+"""Exercise live CMS fetch path + write evidence/SUMMARY.json."""
 from __future__ import annotations
 
 import base64
@@ -18,7 +18,7 @@ EVIDENCE.mkdir(exist_ok=True)
 def rpc(method: str, params: dict | None = None, msg_id: int = 1) -> dict:
     resp = handle_message({"jsonrpc": "2.0", "id": msg_id, "method": method, "params": params or {}})
     assert resp and "error" not in resp, resp
-    (EVIDENCE / f"{method.replace('/', '-')}.json").write_text(json.dumps(resp, indent=2))
+    (EVIDENCE / f"{method.replace('/', '-')}.json").write_text(json.dumps(resp, indent=2)[:20000])
     return resp["result"]
 
 
@@ -26,28 +26,41 @@ def main() -> None:
     init = rpc("initialize", {
         "protocolVersion": "2024-11-05",
         "capabilities": {},
-        "clientInfo": {"name": "evidence", "version": "0.2"},
+        "clientInfo": {"name": "evidence", "version": "0.3"},
     })
-    tools = [t["name"] for t in rpc("tools/list", {}, 2)["tools"]]
-    assert "review_claim_requirements" in tools
-    assert "read_document_bytes" in tools
-
     claim = json.loads(
         rpc(
             "tools/call",
-            {
-                "name": "review_claim_requirements",
-                "arguments": {"payer": "acme-health", "cpt": "27447"},
-            },
+            {"name": "review_claim_requirements", "arguments": {"payer": "medicare", "cpt": "70553"}},
+            2,
+        )["content"][0]["text"]
+    )
+    assert claim["data_plane"]["cms_fetch"] is True
+    assert claim["citations"]
+    uri = claim["citations"][0]["uri"]
+    assert uri.startswith("doc://")
+    assert claim.get("prior_auth") == "auth_not_required"
+    assert claim.get("pa_required") is False
+    assert claim.get("timely_filing_days") == 365
+    assert claim.get("data_plane", {}).get("rci_enriched") is True
+
+    dme = json.loads(
+        rpc(
+            "tools/call",
+            {"name": "review_claim_requirements", "arguments": {"payer": "medicare", "cpt": "E0601"}},
             3,
         )["content"][0]["text"]
     )
-    assert claim["citations"] and claim["citations"][0]["uri"].startswith("demo://")
-    uri = claim["citations"][0]["uri"]
+    assert dme.get("prior_auth") == "auth_required"
+    assert dme.get("pa_required") is True
+    assert "Certificate of Medical Necessity" in (dme.get("required_attachments") or [])
 
-    pdf = rpc("resources/read", {"uri": uri}, 4)["contents"][0]
-    full = base64.b64decode(pdf["blob"])
-    assert full.startswith(b"%PDF")
+    doc = rpc("resources/read", {"uri": uri}, 4)["contents"][0]
+    if "text" in doc:
+        body = doc["text"].encode()
+    else:
+        body = base64.b64decode(doc["blob"])
+    assert len(body) > 1000
 
     assembled = bytearray()
     offset = 0
@@ -56,7 +69,7 @@ def main() -> None:
         part = json.loads(
             rpc(
                 "tools/call",
-                {"name": "read_document_bytes", "arguments": {"uri": uri, "offset": offset, "length": 256}},
+                {"name": "read_document_bytes", "arguments": {"uri": uri, "offset": offset, "length": 4096}},
                 100 + chunks,
             )["content"][0]["text"]
         )
@@ -65,18 +78,24 @@ def main() -> None:
         if not part["hasMore"]:
             break
         offset = part["nextOffset"]
-    assert bytes(assembled) == full
+    assert bytes(assembled) == body
 
     summary = {
         "server": init["serverInfo"],
-        "protocolVersion": init["protocolVersion"],
-        "tools": tools,
         "claim_status": claim["status"],
+        "prior_auth": claim.get("prior_auth"),
+        "pa_required": claim.get("pa_required"),
+        "pa_confidence": claim.get("pa_confidence"),
+        "timely_filing_days": claim.get("timely_filing_days"),
+        "dme_prior_auth": dme.get("prior_auth"),
+        "primary_source": claim["data_plane"]["primary_source"],
         "citation_uri": uri,
-        "pdf_bytes": len(full),
+        "fetched_bytes": len(body),
         "chunk_count": chunks,
-        "policy_returns_uri_not_bytes": True,
-        "story": "claims_desk_payer_policy_pdfs",
+        "cms_live_fetch": True,
+        "rci_enriched": bool(claim.get("data_plane", {}).get("rci_enriched")),
+        "rci_payer_slug": claim.get("data_plane", {}).get("rci_payer_slug"),
+        "returns_uri_not_bytes": True,
     }
     (EVIDENCE / "SUMMARY.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))

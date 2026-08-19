@@ -10,11 +10,11 @@
   <div class="shell">
     <header class="top">
       <div>
-        <p class="eyebrow">MCP Apps demo · personal project</p>
+        <p class="eyebrow">MCP Apps · live CMS sources</p>
         <h1>Claims desk</h1>
         <p class="lede">
-          Payer policies live in PDFs. Agents return structured claim requirements
-          plus citation URIs — this App loads the source documents for the human reviewer.
+          Live fetch from CMS coverage pages and claims manuals. The tool returns
+          structured requirements plus citation URIs; this App streams the source for the reviewer.
         </p>
       </div>
       <div class="flow-pill" id="flowState">Idle</div>
@@ -26,8 +26,8 @@
         <label>
           Payer
           <select id="payer" name="payer">
-            <option value="acme-health">Acme Health</option>
-            <option value="northstar-mutual">Northstar Mutual</option>
+            <option value="medicare">Medicare Fee-For-Service</option>
+            <option value="uhc">UnitedHealthcare</option>
           </select>
         </label>
         <label>
@@ -36,13 +36,13 @@
             <option value="27447">27447 — Total knee arthroplasty</option>
             <option value="27130">27130 — Total hip arthroplasty</option>
             <option value="70553">70553 — MRI brain</option>
-            <option value="72148">72148 — MRI lumbar spine</option>
+            <option value="E0601">E0601 — CPAP (DME)</option>
           </select>
         </label>
         <button type="submit" id="runBtn">Ask MCP tool</button>
       </form>
       <p class="hint">
-        Calls <code>review_claim_requirements</code> — JSON only, no PDF bytes in the model path.
+        Calls <code>review_claim_requirements</code> — live CMS fetch; JSON + URIs only.
       </p>
     </section>
 
@@ -58,16 +58,16 @@
           <dl class="meta" id="metaList"></dl>
           <h3>Required attachments</h3>
           <ul id="attachments"></ul>
-          <h3>Policy citations (URIs)</h3>
+          <h3>Citations (URIs)</h3>
           <ul id="citations" class="citations"></ul>
           <p class="note" id="reviewerNotes"></p>
         </div>
       </section>
 
       <section class="panel doc-panel">
-        <h2>3. Source policy PDF</h2>
+        <h2>3. Source document</h2>
         <p class="hint">
-          Loaded via app-only <code>read_document_bytes</code> (chunked) — not stuffed into chat context.
+          Streamed via app-only <code>read_document_bytes</code> (chunked) from the live CMS fetch.
         </p>
         <div id="docStatus" class="doc-status">No document open</div>
         <iframe id="pdfFrame" title="Policy PDF"></iframe>

@@ -175,6 +175,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
 }
 
 .badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: #ffedd5; color: #c2410c; }
 
 .meta {
   display: grid;

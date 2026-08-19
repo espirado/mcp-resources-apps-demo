@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture idle + claim/PDF screenshots with Chrome headless."""
+"""Capture idle + multi-scenario claim screenshots with Chrome headless."""
 from __future__ import annotations
 
 import subprocess
@@ -13,6 +13,15 @@ SHOTS = ROOT / "docs" / "screenshots"
 SHOTS.mkdir(parents=True, exist_ok=True)
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 BASE = "http://127.0.0.1:8765"
+
+# (filename, path) — capture pages are server-rendered with live CMS + RCI
+SCENARIOS = [
+    ("01-claims-desk-idle.png", "/"),
+    ("02-medicare-tka-lcd.png", "/capture/claim?payer=medicare&cpt=27447"),
+    ("03-medicare-mri-no-pa.png", "/capture/claim?payer=medicare&cpt=70553"),
+    ("04-medicare-dme-pa-required.png", "/capture/claim?payer=medicare&cpt=E0601"),
+    ("05-uhc-mri-pa-required.png", "/capture/claim?payer=uhc&cpt=70553"),
+]
 
 
 def wait_health(timeout: float = 20.0) -> None:
@@ -34,7 +43,7 @@ def shot(url: str, name: str) -> None:
         "--headless=new",
         "--disable-gpu",
         "--hide-scrollbars",
-        "--window-size=1280,1000",
+        "--window-size=1440,1100",
         f"--screenshot={out}",
         url,
     ]
@@ -53,9 +62,16 @@ def main() -> None:
         )
         wait_health(20)
 
-    shot(f"{BASE}/", "01-claims-desk-idle.png")
-    shot(f"{BASE}/capture/claim?payer=acme-health&cpt=27447", "02-claim-result-and-pdf.png")
-    shot(f"{BASE}/capture/claim?payer=northstar-mutual&cpt=70553", "03-imaging-claim-pdf.png")
+    for name, path in SCENARIOS:
+        shot(f"{BASE}{path}", name)
+
+    # Keep legacy blog filenames as copies of the strongest scenes
+    for src, dst in (
+        ("02-medicare-tka-lcd.png", "02-claim-result-and-pdf.png"),
+        ("04-medicare-dme-pa-required.png", "03-imaging-claim-pdf.png"),
+    ):
+        (SHOTS / dst).write_bytes((SHOTS / src).read_bytes())
+        print(f"alias {dst} <- {src}")
 
     if server:
         server.terminate()

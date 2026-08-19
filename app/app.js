@@ -61,7 +61,8 @@ function renderResult(data) {
   document.getElementById("resultCard").classList.remove("hidden");
   const badge = document.getElementById("statusBadge");
   badge.textContent = data.status;
-  badge.classList.toggle("ok", data.status === "allowed");
+  badge.classList.toggle("ok", data.status === "no_prior_auth" || data.status === "allowed");
+  badge.classList.toggle("warn", data.status === "prior_auth_required");
   document.getElementById("procedureLabel").textContent = data.procedure || "";
 
   const meta = document.getElementById("metaList");
@@ -69,8 +70,14 @@ function renderResult(data) {
   const rows = [
     ["Payer", data.payer],
     ["CPT", data.cpt],
-    ["Timely filing", data.timely_filing_days ? `${data.timely_filing_days} days` : "—"],
     ["Prior auth", data.prior_auth],
+    ["PA required", data.pa_required === true ? "yes" : data.pa_required === false ? "no" : "—"],
+    ["PA confidence", data.pa_confidence != null ? data.pa_confidence : "—"],
+    ["Matched rule", data.pa_matched_rule || "—"],
+    ["Timely filing", data.timely_filing_days != null ? `${data.timely_filing_days} days` : "—"],
+    ["Appeal L1", data.first_appeal_deadline_days != null ? `${data.first_appeal_deadline_days} days` : "—"],
+    ["CMS source", data.data_plane?.primary_source || "—"],
+    ["Fetched bytes", data.data_plane?.cached_bytes ?? "—"],
   ];
   for (const [k, v] of rows) {
     const dt = document.createElement("dt");
@@ -115,17 +122,31 @@ async function openPdf(uri, title) {
   const status = document.getElementById("docStatus");
   const chunkMeta = document.getElementById("chunkMeta");
   const frame = document.getElementById("pdfFrame");
-  setFlow("Loading policy PDF…");
-  status.textContent = `Fetching ${title || uri} via read_document_bytes…`;
+  setFlow("Fetching live source…");
+  status.textContent = `Streaming ${title || uri}…`;
   try {
     const blob = await readDocumentBytes(uri, (loaded, total) => {
-      chunkMeta.textContent = `chunks: ${loaded.toLocaleString()} / ${total.toLocaleString()} bytes`;
+      chunkMeta.textContent = `${loaded.toLocaleString()} / ${total.toLocaleString()} bytes`;
       status.textContent = `Streaming ${title || uri}… ${Math.round((100 * loaded) / total)}%`;
     });
     const url = URL.createObjectURL(blob);
-    frame.src = url;
-    status.textContent = `Open: ${title || uri} (${blob.size.toLocaleString()} bytes)`;
-    setFlow("PDF open for reviewer");
+    const mime = blob.type || "";
+    if (mime.startsWith("text/html")) {
+      const html = await blob.text();
+      frame.removeAttribute("src");
+      frame.srcdoc = html;
+    } else if (mime.startsWith("text/")) {
+      const text = await blob.text();
+      frame.removeAttribute("src");
+      frame.srcdoc = `<pre style="white-space:pre-wrap;font:14px/1.45 Georgia,serif;padding:1rem;margin:0;background:#fff;color:#1c1917">${
+        text.replace(/&/g,"&amp;").replace(/</g,"&lt;").slice(0, 50000)
+      }</pre>`;
+    } else {
+      frame.removeAttribute("srcdoc");
+      frame.src = url;
+    }
+    status.textContent = `Open: ${title || uri} (${blob.size.toLocaleString()} bytes · ${blob.type || "bytes"})`;
+    setFlow("Source open for reviewer");
   } catch (err) {
     status.textContent = String(err.message || err);
     setFlow("Error");

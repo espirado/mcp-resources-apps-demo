@@ -1,108 +1,62 @@
-# The claim isn’t hard. The paperwork is.
-### How MCP Apps keep payer policy PDFs next to the answer — without feeding them to the model
+# Open the LCD. Then code the claim.
+### A live CMS claims desk on MCP Apps — tools return URIs, the App streams the source
 
-*Personal AAIF Ambassador write-up by [Andrew Espira](https://github.com/espirado). Demo: [mcp-resources-apps-demo](https://github.com/espirado/mcp-resources-apps-demo).*
+*Personal write-up by [Andrew Espira](https://github.com/espirado). Code: [mcp-resources-apps-demo](https://github.com/espirado/mcp-resources-apps-demo).*
 
 ---
 
-It’s Monday morning in a hospital billing office.
+Coding a knee replacement is the easy part. Confirming what Medicare actually expects in the chart — from a live LCD or claims manual — is the work.
 
-On the screen: a knee replacement ready to drop. CPT **27447**. Payer: a commercial plan with a medical policy library that never seems to live in one place. Somewhere — portal A, drive B, last quarter’s email — there is a PDF that says whether elective joint replacement needs prior auth, what attachments belong on the claim, and how many days you have to file.
+I built a **claims desk** as an MCP App: pick Medicare + CPT **27447**, call one tool, get structured requirements and citation URIs, then stream the **live CMS source** into the reviewer panel. The first hit fetches CMS over HTTPS and caches locally; every later open is a chunked `read_document_bytes` stream into the UI.
 
-That hunt is the job.
+With `RCI_API_KEY` set, the same tool enriches from live prior-auth / claim-intelligence against **`medicare_ffs`** (and UHC). MRI lands as `auth_not_required` (conf 0.75, category match); CPAP DME as `auth_required` with CMN + physician order; filing window 365 days.
 
-Coding the line item takes minutes. **Finding and rereading the payer’s paperwork** takes the rest of the morning. Miss the documentation checklist and the claim comes back. Miss timely filing and it may never get paid. This is one of the hardest parts of medical billing and insurance operations: not the code tables, but the **scattered policies, PA grids, and source notices** humans still have to verify with their own eyes.
+## What you see
 
-Agents are good at structured answers. They are bad roommates for 40-page PDFs. Stuff a policy notice into a tool result as base64 and you hit host size limits, burn the context window, and still leave a reviewer squinting at a wall of encoded bytes.
+**Idle desk.** Medicare + UHC scenarios. One button: ask the MCP tool.
 
-**MCP Apps** are how you split that work cleanly:
+![Claims desk idle](screenshots/01-claims-desk-idle.png)
 
-- the **agent / tool** returns *what to do* (status, PA, attachments, filing window) plus **citation URIs**
-- the **App** fetches and **renders the source PDF** for the human
-- the **model never has to eat the paperwork**
+**TKA against live LCD L33618.** Structured requirements beside the coverage body (indications / limitations) — not the CMS page chrome.
 
-I built a small personal demo to make that story concrete: a **claims desk** UI wired to an MCP server.
+![Medicare TKA with live LCD](screenshots/02-medicare-tka-lcd.png)
 
-## Scene 1 — The desk before the answer
+**MRI (70553) — no prior auth** on Medicare FFS, category match at 0.75, 365-day filing, Claims Processing Manual citation.
 
-The App opens on an empty claims desk. You pick a payer and a CPT, then call a single MCP tool. The copy on the page is the design intent out loud: JSON for the agent path, documents for the reviewer path.
+![Medicare MRI no PA](screenshots/03-medicare-mri-no-pa.png)
 
-![Claims desk idle — choose payer and CPT, then ask the MCP tool](screenshots/01-claims-desk-idle.png)
+**CPAP DME (E0601) — prior auth required**, with Certificate of Medical Necessity + physician order.
 
-This is the moment most “AI for RCM” demos skip. They return a paragraph of advice and hope the analyst trusts it. Real claims work doesn’t work that way. Advice without the policy page open is how denials happen.
+![Medicare DME PA required](screenshots/04-medicare-dme-pa-required.png)
 
-## Scene 2 — A real claim: TKA at Acme Health
+**Same CPT at UHC** flips to `auth_required` with clinical notes / order and a 90-day filing window.
 
-Scenario: **Acme Health**, CPT **27447** (total knee arthroplasty).
+![UHC MRI PA required](screenshots/05-uhc-mri-pa-required.png)
 
-The MCP tool `review_claim_requirements` comes back with structured guidance:
-
-- status **conditional**
-- prior auth **required for elective**
-- timely filing **90 days**
-- required attachments: operative report, conservative-care notes, radiology report
-- **citation URIs** into the orthopedic medical policy and the PA code grid
-
-Then the App — not the model — opens the source policy via app-only `read_document_bytes` (chunked). On the right you see the actual notice: PA language, documentation checklist, filing window, coding notes that mention 27447.
-
-![Structured claim requirements beside the payer policy document](screenshots/02-claim-result-and-pdf.png)
-
-That split is the whole product idea:
-
-| Left panel (tool / agent) | Right panel (MCP App) |
-|---------------------------|------------------------|
-| Machine-readable requirements | Human-readable source of truth |
-| Safe to reason over | Safe to verify against |
-| No PDF bytes | PDF streamed in chunks |
-
-The teal chip on the document pane (`chunk 0 · 256 / 1410 bytes · hasMore=true`) is intentional. It shows the App pulling paperwork through the protocol instead of pretending the model “read” the file.
-
-## Scene 3 — Same pattern, different paperwork
-
-Swap to **Northstar Mutual** and an MRI code (**70553**). Different payer, different manual, same choreography: tool → URIs → App opens the imaging utilization policy for the reviewer.
-
-![Imaging claim scenario with policy document open](screenshots/03-imaging-claim-pdf.png)
-
-Billing teams don’t have one PDF problem. They have **hundreds**, per payer, per year, with effective dates that move. The protocol pattern has to survive that volume: always return handles, always render on demand, always keep bytes out of the prompt.
-
-## What MCP is doing under the desk
+## Implementation
 
 ```text
-Analyst picks payer + CPT
+Analyst: Medicare + CPT
         │
         ▼
 tools/call  review_claim_requirements
-        │     returns JSON + demo://policy URIs
-        │     (no PDF bytes)
+        │     HTTPS GET cms.gov (LCD HTML coverage body, or PDF)
+        │     RCI prior-auth / claim-intelligence (medicare_ffs / uhc)
+        │     returns JSON + doc:// URIs  (never document bytes)
         ▼
-App UI (claims desk)
-        │
-        ├─ show status / PA / attachments
-        │
-        └─ tools/call  read_document_bytes   ← app-only
-                 chunked base64
-                 └─ render beside the answer
+App UI
+        ├─ render requirements
+        └─ tools/call  read_document_bytes   ← app-only, chunked
+                 └─ HTML / PDF pane for the reviewer
 ```
 
-Resources still matter: `resources/list` and `resources/read` expose the policy library and the Apps shell. For large manuals, the App prefers **chunked** `read_document_bytes` marked with:
+Resources expose the same library (`resources/list`, `resources/read`). Large manuals use the app-only chunked tool:
 
 ```json
 "_meta": { "ui": { "visibility": ["app"] } }
 ```
 
-so hosts know those payloads are for the UI, not the assistant transcript.
-
-I verified the path with a small evidence runner: the claim tool returns URIs only; reassembling the PDF across chunks matches `resources/read` byte-for-byte.
-
-## Why this belongs in the MCP Apps conversation
-
-AAIF’s MCP education track keeps asking developers to show **Apps** that do something a chat transcript can’t. Claims review is that something.
-
-- **Tools** alone give you a chatbot with opinions about PA.
-- **Resources** alone give you a file browser.
-- **Apps** give you a **workstation**: answer + paperwork in one place, with the human still in the loop.
-
-If you build agents for any document-heavy domain — insurance, compliance, procurement, clinical admin — the same story applies. The model proposes. The App shows the exhibit. The person decides.
+Evidence runner proves the split: claim tool returns URIs only; reassembled chunks match `resources/read` byte-for-byte against the live fetch.
 
 ## Try it
 
@@ -110,23 +64,20 @@ If you build agents for any document-heavy domain — insurance, compliance, pro
 git clone https://github.com/espirado/mcp-resources-apps-demo
 cd mcp-resources-apps-demo
 python3 scripts/serve_app.py
-# open http://127.0.0.1:8765
+# → http://127.0.0.1:8765
+
+# optional enrichment (auto-loads from .env if present)
+# export RCI_API_KEY=...
+# export RCI_API_URL=https://api-dev.rcintell.com
 ```
 
-Pick **Acme Health / 27447**, click **Ask MCP tool**, open a citation. Watch the policy land next to the structured result.
+Pick **Medicare / 27447**, run the tool, open a citation. Watch a live CMS document land next to the structured result.
 
-## Honesty (because Ambassadors shouldn’t ship slop)
+## Steal this
 
-- Fixture payers and PDFs are **synthetic** — for teaching the pattern, not coverage advice.
-- Protocol version in the demo is still `2024-11-05`.
-- The local `POST /mcp` host is an Apps **spike**, not a full `@modelcontextprotocol/ext-apps` runtime.
-- Production versions need allowlisted fetches, auth, and audit when you point at real payer manuals.
+1. **Return citation URIs from tools** — not PDF/HTML bytes.
+2. **Stream documents in the App** — that’s what reviewers need beside the answer.
+3. **Fetch real sources** — CMS LCD coverage body and claims manuals here; wire your own APIs the same way.
+4. **Keep the human in the loop** — the model proposes; the App shows the exhibit; the person decides.
 
-## What I want other builders to steal
-
-1. **Don’t put PDFs in tool results.** Return citation URIs.
-2. **Put paperwork in the App.** That’s what reviewers actually need.
-3. **Chunk large documents** with an app-only tool when hosts have size limits.
-4. **Tell a domain story.** MCP Apps land harder when the UI solves a job people already hate — like hunting payer policies before a claim goes out.
-
-The claim was never the hard part. The paperwork was. MCP Apps are how we stop asking the model to swallow it.
+The claim was never the hard part. Opening the right source document was. MCP Apps are how you put that source next to the answer.

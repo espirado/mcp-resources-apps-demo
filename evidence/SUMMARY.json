@@ -1,18 +1,20 @@
 {
   "server": {
     "name": "mcp-claims-desk",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
-  "protocolVersion": "2024-11-05",
-  "tools": [
-    "review_claim_requirements",
-    "list_policy_library",
-    "read_document_bytes"
-  ],
-  "claim_status": "conditional",
-  "citation_uri": "demo://policies/acme-ortho-2026",
-  "pdf_bytes": 1410,
-  "chunk_count": 6,
-  "policy_returns_uri_not_bytes": true,
-  "story": "claims_desk_payer_policy_pdfs"
+  "claim_status": "no_prior_auth",
+  "prior_auth": "auth_not_required",
+  "pa_required": false,
+  "pa_confidence": 0.75,
+  "timely_filing_days": 365,
+  "dme_prior_auth": "auth_required",
+  "primary_source": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Downloads/clm104c12.pdf",
+  "citation_uri": "doc://cms/claims-manual-ch12",
+  "fetched_bytes": 1344267,
+  "chunk_count": 329,
+  "cms_live_fetch": true,
+  "rci_enriched": true,
+  "rci_payer_slug": "medicare_ffs",
+  "returns_uri_not_bytes": true
 }

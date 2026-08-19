@@ -1,10 +1,7 @@
-.DS_Store
-__pycache__/
-*.py[cod]
-.venv/
-dist/
-*.egg-info/
-.pytest_cache/
 .chrome-shot-profile/
 .venv/
 __pycache__/
+.cache/
+*.pyc
+.DS_Store
+.env

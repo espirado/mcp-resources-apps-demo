@@ -18,47 +18,68 @@ APP_DIR = ROOT / "app"
 PORT = 8765
 
 
-def _pdf_preview_text(uri: str) -> str:
-    """Best-effort extract of Latin-1 strings from our simple fixture PDFs."""
+def _doc_preview(uri: str) -> tuple[str, str]:
+    """Return (mime, preview_html_or_text) from resources/read."""
     pdf_resp = handle_message(
         {"jsonrpc": "2.0", "id": 1, "method": "resources/read", "params": {"uri": uri}}
     )
-    raw = base64.b64decode(pdf_resp["result"]["contents"][0]["blob"])
-    # Pull printable runs from Tj operators: (text) Tj
-    import re
+    content = pdf_resp["result"]["contents"][0]
+    mime = content.get("mimeType") or ""
+    if "text" in content:
+        return mime, content["text"][:120000]
+    raw = base64.b64decode(content["blob"])
+    if raw[:4] == b"%PDF":
+        import re
 
-    parts = re.findall(rb"\((.*?)\)\s*Tj", raw)
-    lines = []
-    for p in parts:
-        try:
-            lines.append(p.decode("latin-1"))
-        except Exception:
-            continue
-    return "\n".join(lines) if lines else "(binary PDF — open in interactive app)"
+        parts = re.findall(rb"\((.*?)\)\s*Tj", raw)
+        lines = [p.decode("latin-1", errors="replace") for p in parts]
+        return mime, "\n".join(lines)[:8000] or f"(PDF {len(raw)} bytes — open in interactive app)"
+    return mime, raw.decode("utf-8", errors="replace")[:8000]
 
 
-def build_capture_html(payer: str = "acme-health", cpt: str = "27447") -> bytes:
+def build_capture_html(payer: str = "medicare", cpt: str = "27447") -> bytes:
     claim = json.loads(
         call_tool("review_claim_requirements", {"payer": payer, "cpt": cpt})["content"][0]["text"]
     )
     cite = (claim.get("citations") or [{}])[0]
-    uri = cite.get("uri") or "demo://policies/acme-ortho-2026"
+    uri = cite.get("uri") or ""
     title = cite.get("title") or uri
-    preview = _pdf_preview_text(uri)
-    # Also prove chunked path was used conceptually
+    source_url = cite.get("url") or claim.get("data_plane", {}).get("primary_source") or ""
+    mime, preview = _doc_preview(uri) if uri else ("text/plain", "")
     chunk = json.loads(
         call_tool("read_document_bytes", {"uri": uri, "offset": 0, "length": 256})[
             "content"
         ][0]["text"]
-    )
+    ) if uri else {}
     attachments = "".join(f"<li>{a}</li>" for a in claim.get("required_attachments") or [])
     citations = "".join(
-        f"<li><strong>{c.get('title')}</strong><br/><code>{c.get('uri')}</code></li>"
+        f"<li><strong>{c.get('title')}</strong><br/><code>{c.get('uri')}</code>"
+        f"<br/><a href=\"{c.get('url')}\">{c.get('url')}</a></li>"
         for c in claim.get("citations") or []
     )
     css = (APP_DIR / "app.css").read_text(encoding="utf-8")
-    preview_html = "<br/>".join(
-        line.replace("&", "&amp;").replace("<", "&lt;") for line in preview.splitlines()
+    if (mime or "").startswith("text/html"):
+        import base64 as _b64
+
+        data_url = "data:text/html;base64," + _b64.b64encode(preview.encode("utf-8")).decode("ascii")
+        preview_html = (
+            f'<iframe title="source" src="{data_url}" '
+            f'style="width:100%;min-height:22rem;border:0;background:#fff"></iframe>'
+        )
+    else:
+        preview_html = (
+            preview.replace("&", "&amp;").replace("<", "&lt;").replace("\n", "<br/>")
+        )
+    excerpt = (claim.get("source_excerpt") or "")[:500]
+    data_plane = claim.get("data_plane") or {}
+    cached_bytes = data_plane.get("cached_bytes")
+    filing = (
+        f"{claim.get('timely_filing_days')} days"
+        if claim.get("timely_filing_days") is not None
+        else "—"
+    )
+    pa_req = (
+        "yes" if claim.get("pa_required") is True else "no" if claim.get("pa_required") is False else "—"
     )
     html = f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8" />
@@ -69,22 +90,22 @@ body {{ background: #f3efe6; }}
   flex: 1; min-height: 22rem; overflow: auto; padding: 1.25rem 1.4rem;
   border: 1px solid var(--line); border-radius: 0.65rem; background: #fff;
   font-family: Georgia, "Iowan Old Style", serif; font-size: 0.92rem; line-height: 1.45;
-  color: #1c1917; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+  color: #1c1917;
 }}
 .doc-sheet .doc-title {{ font-weight: 700; margin-bottom: 0.75rem; }}
 .chunk-chip {{
-  display: inline-block; margin-top: 0.4rem; padding: 0.2rem 0.5rem;
+  display: inline-block; margin: 0.4rem 0 0.6rem; padding: 0.2rem 0.5rem;
   border-radius: 999px; background: #ccfbf1; color: #0f766e; font-size: 0.72rem; font-weight: 700;
 }}
 </style></head><body>
 <div class="shell">
   <header class="top">
     <div>
-      <p class="eyebrow">MCP Apps demo · personal project</p>
+      <p class="eyebrow">MCP Apps · live CMS sources</p>
       <h1>Claims desk</h1>
-      <p class="lede">Payer policies live in PDFs. The agent returned structured requirements + citation URIs; the App fetched the source policy for the reviewer.</p>
+      <p class="lede">Live fetch from CMS coverage pages / manuals. Tool returns structured requirements + URIs; the App streams the source for the reviewer.</p>
     </div>
-    <div class="flow-pill">PDF open for reviewer</div>
+    <div class="flow-pill">Source open for reviewer</div>
   </header>
   <section class="query panel">
     <h2>1. Claim scenario</h2>
@@ -98,19 +119,25 @@ body {{ background: #f3efe6; }}
         <span>{claim.get('procedure')}</span>
       </div>
       <dl class="meta">
-        <dt>Timely filing</dt><dd>{claim.get('timely_filing_days')} days</dd>
         <dt>Prior auth</dt><dd>{claim.get('prior_auth')}</dd>
+        <dt>PA required</dt><dd>{pa_req}</dd>
+        <dt>PA confidence</dt><dd>{claim.get('pa_confidence')}</dd>
+        <dt>Matched rule</dt><dd>{claim.get('pa_matched_rule') or '—'}</dd>
+        <dt>Timely filing</dt><dd>{filing}</dd>
+        <dt>CMS source</dt><dd style="word-break:break-all">{source_url}</dd>
+        <dt>Fetched</dt><dd>{cached_bytes} bytes</dd>
       </dl>
       <h3>Required attachments</h3>
       <ul>{attachments}</ul>
-      <h3>Policy citations (URIs)</h3>
+      <h3>Citations</h3>
       <ul class="citations">{citations}</ul>
       <p class="note">{claim.get('reviewer_notes')}</p>
+      <p class="note"><em>Excerpt:</em> {excerpt.replace('<','&lt;')}</p>
     </section>
     <section class="panel doc-panel">
-      <h2>3. Source policy PDF</h2>
-      <div class="doc-status">Open: {title}</div>
-      <div class="chunk-chip">read_document_bytes · chunk 0 · {chunk.get('length')} / {chunk.get('totalSize')} bytes · hasMore={chunk.get('hasMore')}</div>
+      <h2>3. Source document</h2>
+      <div class="doc-status">Open: {title} ({mime})</div>
+      <div class="chunk-chip">read_document_bytes · {chunk.get('length')} / {chunk.get('totalSize')} bytes · hasMore={chunk.get('hasMore')}</div>
       <div class="doc-sheet">
         <div class="doc-title">{title}</div>
         <div>{preview_html}</div>
@@ -119,7 +146,7 @@ body {{ background: #f3efe6; }}
   </div>
   <footer>
     <span>MCP host bridge: POST /mcp</span>
-    <span>model never received PDF bytes</span>
+    <span>live CMS fetch — model never received document bytes</span>
   </footer>
 </div>
 </body></html>"""
